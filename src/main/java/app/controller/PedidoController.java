@@ -1,9 +1,7 @@
 package app.controller;
 
 import app.dto.PedidoDTO;
-
 import app.entity.Pedido;
-
 import app.entity.Usuario;
 import app.service.PedidoService;
 import app.service.UsuarioService;
@@ -12,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.util.List;
 
@@ -27,8 +24,7 @@ public class PedidoController {
     @Autowired
     private UsuarioService usuarioService;
 
-
-    @PreAuthorize("hasAnyRole('CLIENTE', 'ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USUARIO', 'ADMIN')")
     @PostMapping("/save")
     public ResponseEntity<Pedido> save(@RequestBody PedidoDTO pedidoDTO) {
         Usuario comprador = usuarioService.findById(pedidoDTO.getCompradorId()).orElse(null);
@@ -37,12 +33,11 @@ public class PedidoController {
         }
 
         Pedido pedido = pedidoService.createPedidoFromDTO(pedidoDTO, comprador);
-
         Pedido saved = pedidoService.save(pedido);
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<Pedido> update(@PathVariable("id") long id, @RequestBody PedidoDTO pedidoDTO) {
         Usuario comprador = usuarioService.findById(pedidoDTO.getCompradorId()).orElse(null);
@@ -57,14 +52,14 @@ public class PedidoController {
         return new ResponseEntity<>(atualizado, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/listAll")
     public ResponseEntity<List<Pedido>> listAll() {
         List<Pedido> pedidos = pedidoService.listAll();
         return new ResponseEntity<>(pedidos, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USUARIO', 'ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<Pedido> findById(@PathVariable("id") long id) {
         return pedidoService.findById(id)
@@ -72,7 +67,7 @@ public class PedidoController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") long id) {
         pedidoService.delete(id);

@@ -23,14 +23,14 @@ public class UsuarioController {
     @Autowired
     private JwtServiceGenerator jwtService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/save")
     public ResponseEntity<Usuario> save(@RequestBody Usuario usuario) {
         Usuario novoUsuario = usuarioService.save(usuario);
         return new ResponseEntity<>(novoUsuario, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<Usuario> update(@PathVariable("id") long id, @RequestBody Usuario usuario) {
         usuario.setId(id);
@@ -38,14 +38,14 @@ public class UsuarioController {
         return new ResponseEntity<>(usuarioAtualizado, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/listAll")
     public ResponseEntity<List<Usuario>> listAll() {
         List<Usuario> usuarios = usuarioService.listAll();
         return new ResponseEntity<>(usuarios, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<Usuario> findById(@PathVariable("id") long id) {
         return usuarioService.findById(id)
@@ -53,7 +53,7 @@ public class UsuarioController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") long id) {
         usuarioService.delete(id);
@@ -66,7 +66,7 @@ public class UsuarioController {
 
         if (usuarioOpt.isPresent() && usuarioOpt.get().getSenha().equals(loginData.getSenha())) {
             Usuario usuario = usuarioOpt.get();
-            String token = jwtService.generateToken(usuario.getId(),usuario.getEmail(), usuario.getTipo().name());
+            String token = jwtService.generateToken(usuario.getId(), usuario.getEmail(), usuario.getTipo().name());
             return new ResponseEntity<>(token, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

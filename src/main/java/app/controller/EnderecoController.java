@@ -18,14 +18,14 @@ public class EnderecoController {
     @Autowired
     private EnderecoService enderecoService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @PostMapping("/save")
     public ResponseEntity<Endereco> save(@RequestBody Endereco endereco) {
         Endereco novoEndereco = enderecoService.save(endereco);
         return new ResponseEntity<>(novoEndereco, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @PutMapping("/update/{id}")
     public ResponseEntity<Endereco> update(@PathVariable("id") long id, @RequestBody Endereco endereco) {
         endereco.setId(id);
@@ -33,14 +33,14 @@ public class EnderecoController {
         return new ResponseEntity<>(enderecoAtualizado, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @GetMapping("/listAll")
     public ResponseEntity<List<Endereco>> listAll() {
         List<Endereco> enderecos = enderecoService.listAll();
         return new ResponseEntity<>(enderecos, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<Endereco> findById(@PathVariable("id") long id) {
         return enderecoService.findById(id)
@@ -48,7 +48,7 @@ public class EnderecoController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") long id) {
         enderecoService.delete(id);

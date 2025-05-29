@@ -2,22 +2,23 @@ package app.config;
 
 import java.util.List;
 
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -30,14 +31,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> {}) // ✅ Habilita CORS com configuração do Bean abaixo
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/usuarios/login",
-                    "/api/produtos/**",
-                    "/api/avaliacoes/**",
-                    "/api/pedidos/save",
-                    "/api/pagamentos/save"
-                ).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/produtos/**").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/avaliacoes/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/produtos/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/produtos/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/produtos/**").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/avaliacoes/**").authenticated()
+                .requestMatchers("/api/pedidos/**").authenticated()
+                .requestMatchers("/api/pagamentos/**").authenticated()
                 .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -46,9 +50,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.addAllowedOrigin("http://localhost:4200");
@@ -64,11 +66,9 @@ public class SecurityConfig {
             HttpMethod.DELETE.name()
         ));
 
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-        bean.setOrder(-102);
-
-        return bean;
+        return source;
     }
 }

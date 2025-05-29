@@ -1,16 +1,20 @@
 package app.config;
 
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
 
 @Component
-public class JwtAuthenticationFilter implements Filter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtServiceGenerator jwtService;
 
@@ -19,23 +23,17 @@ public class JwtAuthenticationFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
 
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String path = httpRequest.getServletPath();
+        String path = request.getServletPath();
 
-        if (path.equals("/api/usuarios/login") ||
-            path.startsWith("/api/produtos") ||
-            path.startsWith("/api/avaliacoes") ||
-            path.equals("/api/pedidos/save") ||
-            path.equals("/api/pagamentos/save")
-        ) {
+        if (path.equals("/api/usuarios/login")) {
             chain.doFilter(request, response);
             return;
         }
 
-        String authHeader = httpRequest.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
@@ -47,10 +45,18 @@ public class JwtAuthenticationFilter implements Filter {
                 var auth = new UsernamePasswordAuthenticationToken(
                         email,
                         null,
-                        Collections.singleton(() -> "ROLE_" + role)
+                        Collections.singleton(new SimpleGrantedAuthority(role))
                 );
+
+                System.out.println("✅ JwtAuthenticationFilter: Token válido! Setando role: " + role);
+                System.out.println("✅ JwtAuthenticationFilter: Authentication setado: " + auth);
+
                 SecurityContextHolder.getContext().setAuthentication(auth);
+            } else {
+                System.out.println("❌ JwtAuthenticationFilter: Token inválido.");
             }
+        } else {
+            System.out.println("❌ JwtAuthenticationFilter: Authorization header ausente ou mal formatado.");
         }
 
         chain.doFilter(request, response);

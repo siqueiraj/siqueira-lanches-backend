@@ -18,14 +18,14 @@ public class AvaliacaoController {
     @Autowired
     private AvaliacaoService avaliacaoService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @PostMapping("/save")
     public ResponseEntity<Avaliacao> save(@RequestBody Avaliacao avaliacao) {
         Avaliacao novaAvaliacao = avaliacaoService.save(avaliacao);
         return new ResponseEntity<>(novaAvaliacao, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @PutMapping("/update/{id}")
     public ResponseEntity<Avaliacao> update(@PathVariable("id") long id, @RequestBody Avaliacao avaliacao) {
         avaliacao.setId(id);
@@ -33,14 +33,14 @@ public class AvaliacaoController {
         return new ResponseEntity<>(avaliacaoAtualizada, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @GetMapping("/listAll")
     public ResponseEntity<List<Avaliacao>> listAll() {
         List<Avaliacao> avaliacoes = avaliacaoService.listAll();
         return new ResponseEntity<>(avaliacoes, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<Avaliacao> findById(@PathVariable("id") long id) {
         return avaliacaoService.findById(id)
@@ -48,7 +48,7 @@ public class AvaliacaoController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") long id) {
         avaliacaoService.delete(id);

@@ -18,14 +18,14 @@ public class ProdutoController {
     @Autowired
     private ProdutoService produtoService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/save")
     public ResponseEntity<Produto> save(@RequestBody Produto produto) {
         Produto novoProduto = produtoService.save(produto);
         return new ResponseEntity<>(novoProduto, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PutMapping("/update/{id}")
     public ResponseEntity<Produto> update(@PathVariable("id") long id, @RequestBody Produto produto) {
         produto.setId(id);
@@ -33,14 +33,14 @@ public class ProdutoController {
         return new ResponseEntity<>(produtoAtualizado, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USUARIO', 'ADMIN')")
     @GetMapping("/listAll")
     public ResponseEntity<List<Produto>> listAll() {
         List<Produto> produtos = produtoService.listAll();
         return new ResponseEntity<>(produtos, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USUARIO', 'ADMIN')")
     @GetMapping("/findById/{id}")
     public ResponseEntity<Produto> findById(@PathVariable("id") long id) {
         return produtoService.findById(id)
@@ -48,14 +48,14 @@ public class ProdutoController {
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") long id) {
         produtoService.delete(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('USUARIO', 'ADMIN')")
     @GetMapping("/findByNome/{nome}")
     public ResponseEntity<List<Produto>> findByNome(@PathVariable("nome") String nome) {
         List<Produto> produtos = produtoService.findByNome(nome);
